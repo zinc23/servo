@@ -4,6 +4,11 @@
 
 pub use dom::bindings::str::DOMString;
 
+// For compile-fail tests only.
+pub use dom::bindings::cell::DOMRefCell;
+pub use dom::bindings::js::JS;
+pub use dom::node::Node;
+
 pub mod size_of {
     use dom::characterdata::CharacterData;
     use dom::element::Element;
