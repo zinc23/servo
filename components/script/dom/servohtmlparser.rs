@@ -338,7 +338,6 @@ impl ServoHTMLParser {
     pub fn pending_input(&self) -> &DOMRefCell<Vec<String>> {
         &self.pending_input
     }
-
 }
 
 impl ServoHTMLParser {

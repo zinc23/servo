@@ -247,6 +247,11 @@ impl Node {
         }
         let document = new_child.owner_doc();
         document.content_and_heritage_changed(new_child, NodeDamage::OtherNodeDamage);
+
+        // This is used for layout optimization.
+        if new_child.is::<Element>() {
+            document.increment_dom_count();
+        }
     }
 
     /// Removes the given child from this node's list of children.
@@ -288,6 +293,11 @@ impl Node {
 
         self.owner_doc().content_and_heritage_changed(self, NodeDamage::OtherNodeDamage);
         child.owner_doc().content_and_heritage_changed(child, NodeDamage::OtherNodeDamage);
+
+        // This is used for layout optimization.
+        if child.is::<Element>() {
+            child.owner_doc().decrement_dom_count();
+        }
     }
 
     pub fn to_untrusted_node_address(&self) -> UntrustedNodeAddress {
