@@ -1180,7 +1180,8 @@ impl LayoutThread {
                     }
                     Some(ref mut traversal) => {
                         parallel::traverse_dom::<ServoLayoutNode, RecalcStyleAndConstructFlows>(
-                            node, &shared_layout_context, traversal);
+                            node, &shared_layout_context, traversal,
+                            opts::get().style_sharing_stats);
                     }
                 }
             });

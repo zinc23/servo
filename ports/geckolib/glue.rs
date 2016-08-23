@@ -107,7 +107,8 @@ fn restyle_subtree(node: GeckoNode, raw_data: *mut RawServoStyleSet) {
         sequential::traverse_dom::<GeckoNode, RecalcStyleOnly>(node, &shared_style_context);
     } else {
         parallel::traverse_dom::<GeckoNode, RecalcStyleOnly>(node, &shared_style_context,
-                                                             &mut per_doc_data.work_queue);
+                                                             &mut per_doc_data.work_queue,
+                                                             false);
     }
 }
 

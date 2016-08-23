@@ -91,6 +91,7 @@ pub mod keyframes;
 pub mod logical_geometry;
 pub mod matching;
 pub mod media_queries;
+pub mod opts;
 pub mod parallel;
 pub mod parser;
 pub mod refcell;

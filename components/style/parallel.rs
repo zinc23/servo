@@ -13,7 +13,6 @@ use std::mem;
 use std::sync::atomic::Ordering;
 use traversal::{RestyleResult, DomTraversalContext};
 use traversal::{STYLE_SHARING_CACHE_HITS, STYLE_SHARING_CACHE_MISSES};
-use util::opts;
 use workqueue::{WorkQueue, WorkUnit, WorkerProxy};
 
 #[allow(dead_code)]
@@ -43,11 +42,12 @@ pub fn run_queue_with_custom_work_data_type<To, F, SharedContext: Sync>(
 
 pub fn traverse_dom<N, C>(root: N,
                           queue_data: &C::SharedContext,
-                          queue: &mut WorkQueue<C::SharedContext, WorkQueueData>)
+                          queue: &mut WorkQueue<C::SharedContext, WorkQueueData>,
+                          style_sharing_stats: bool)
     where N: TNode,
           C: DomTraversalContext<N>
 {
-    if opts::get().style_sharing_stats {
+    if style_sharing_stats {
         STYLE_SHARING_CACHE_HITS.store(0, Ordering::SeqCst);
         STYLE_SHARING_CACHE_MISSES.store(0, Ordering::SeqCst);
     }
@@ -58,7 +58,7 @@ pub fn traverse_dom<N, C>(root: N,
         });
     }, queue_data);
 
-    if opts::get().style_sharing_stats {
+    if style_sharing_stats {
         let hits = STYLE_SHARING_CACHE_HITS.load(Ordering::SeqCst);
         let misses = STYLE_SHARING_CACHE_MISSES.load(Ordering::SeqCst);
 

@@ -15,6 +15,7 @@ use script_layout_interface::wrapper_traits::{LayoutNode, ThreadSafeLayoutNode};
 use std::mem;
 use style::context::{LocalStyleContext, SharedStyleContext, StyleContext};
 use style::dom::TNode;
+use style::opts::Opts;
 use style::selector_impl::ServoSelectorImpl;
 use style::traversal::RestyleResult;
 use style::traversal::{DomTraversalContext, remove_from_bloom_filter, recalc_style_at};
@@ -75,7 +76,12 @@ impl<'lc, N> DomTraversalContext<N> for RecalcStyleAndConstructFlows<'lc>
         // done by the HTML parser.
         node.initialize_data();
 
-        recalc_style_at(&self.context, self.root, node)
+        let opts = opts::get();
+        recalc_style_at(&self.context, self.root, node, &Opts {
+            disable_share_style_cache: opts.disable_share_style_cache,
+            style_sharing_stats: opts.style_sharing_stats,
+            nonincremental_layout: opts.nonincremental_layout,
+        })
     }
 
     fn process_postorder(&self, node: N) {

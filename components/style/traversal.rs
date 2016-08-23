@@ -8,12 +8,12 @@ use animation;
 use context::{LocalStyleContext, SharedStyleContext, StyleContext};
 use dom::{OpaqueNode, TNode, TRestyleDamage, UnsafeNode};
 use matching::{ApplicableDeclarations, ElementMatchMethods, MatchMethods, StyleSharingResult};
+use opts::Opts;
 use selectors::bloom::BloomFilter;
 use selectors::matching::StyleRelations;
 use std::cell::RefCell;
 use std::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use tid::tid;
-use util::opts;
 
 /// Every time we do another layout, the old bloom filters are invalid. This is
 /// detected by ticking a generation number every layout.
@@ -289,7 +289,8 @@ fn ensure_node_styled_internal<'a, N, C>(node: N,
 #[allow(unsafe_code)]
 pub fn recalc_style_at<'a, N, C>(context: &'a C,
                                  root: OpaqueNode,
-                                 node: N) -> RestyleResult
+                                 node: N,
+                                 opts: &Opts) -> RestyleResult
     where N: TNode,
           C: StyleContext<'a>
 {
@@ -302,7 +303,7 @@ pub fn recalc_style_at<'a, N, C>(context: &'a C,
     // Get the style bloom filter.
     let mut bf = take_thread_local_bloom_filter(parent_opt, root, context.shared_context());
 
-    let nonincremental_layout = opts::get().nonincremental_layout;
+    let nonincremental_layout = opts.nonincremental_layout;
     let mut restyle_result = RestyleResult::Continue;
     if nonincremental_layout || node.is_dirty() {
         // Remove existing CSS styles from nodes whose content has changed (e.g. text changed),
@@ -316,14 +317,14 @@ pub fn recalc_style_at<'a, N, C>(context: &'a C,
             &mut context.local_context().style_sharing_candidate_cache.borrow_mut();
 
         let sharing_result = match node.as_element() {
-            Some(element) => {
+            Some(element) if !opts.disable_share_style_cache => {
                 unsafe {
                     element.share_style_if_possible(style_sharing_candidate_cache,
                                                     context.shared_context(),
                                                     parent_opt.clone())
                 }
             },
-            None => StyleSharingResult::CannotShare,
+            _ => StyleSharingResult::CannotShare,
         };
 
         // Otherwise, match and cascade selectors.
@@ -334,7 +335,7 @@ pub fn recalc_style_at<'a, N, C>(context: &'a C,
                 let relations;
                 let shareable_element = match node.as_element() {
                     Some(element) => {
-                        if opts::get().style_sharing_stats {
+                        if opts.style_sharing_stats {
                             STYLE_SHARING_CACHE_MISSES.fetch_add(1, Ordering::Relaxed);
                         }
 
@@ -376,7 +377,7 @@ pub fn recalc_style_at<'a, N, C>(context: &'a C,
             }
             StyleSharingResult::StyleWasShared(index, damage, cached_restyle_result) => {
                 restyle_result = cached_restyle_result;
-                if opts::get().style_sharing_stats {
+                if opts.style_sharing_stats {
                     STYLE_SHARING_CACHE_HITS.fetch_add(1, Ordering::Relaxed);
                 }
                 style_sharing_candidate_cache.touch(index);

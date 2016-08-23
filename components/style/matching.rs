@@ -28,7 +28,6 @@ use std::slice::IterMut;
 use std::sync::Arc;
 use string_cache::Atom;
 use traversal::RestyleResult;
-use util::opts;
 
 fn create_common_style_affecting_attributes_from_element<E: TElement>(element: &E)
                                                          -> CommonStyleAffectingAttributes {
@@ -689,10 +688,6 @@ pub trait ElementMatchMethods : TElement {
                                       shared_context: &SharedStyleContext,
                                       parent: Option<Self::ConcreteNode>)
                                       -> StyleSharingResult<<Self::ConcreteNode as TNode>::ConcreteRestyleDamage> {
-        if opts::get().disable_share_style_cache {
-            return StyleSharingResult::CannotShare
-        }
-
         if self.style_attribute().is_some() {
             return StyleSharingResult::CannotShare
         }
