@@ -73,7 +73,7 @@ class Longhand(object):
         self.ident = to_rust_ident(name)
         self.camel_case = to_camel_case(self.ident)
         self.style_struct = style_struct
-        self.experimental = ("layout.%s.enabled" % name) if experimental else None
+        self.experimental = experimental
         self.custom_cascade = custom_cascade
         self.internal = internal
         self.need_index = need_index
@@ -112,7 +112,7 @@ class Shorthand(object):
         self.ident = to_rust_ident(name)
         self.camel_case = to_camel_case(self.ident)
         self.derived_from = None
-        self.experimental = ("layout.%s.enabled" % name) if experimental else None
+        self.experimental = experimental
         self.sub_properties = sub_properties
         self.internal = internal
 
