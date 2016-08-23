@@ -33,6 +33,17 @@ impl ParserContextExtraData {
     pub fn default() -> ParserContextExtraData {
         ParserContextExtraData { base: None, referrer: None, principal: None }
     }
+
+    #[cfg(not(feature = "gecko"))]
+    pub fn pref_enabled(&self, pref: &str) -> bool {
+        ::util::prefs::PREFS.get(pref).as_boolean().unwrap_or(false)
+    }
+
+    #[cfg(feature = "gecko")]
+    pub fn pref_enabled(&self, _pref: &str) -> bool {
+        // FIXME(bug 1297322): implement preference support for Stylo.
+        false
+    }
 }
 
 pub struct ParserContext<'a> {
