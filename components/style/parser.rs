@@ -64,6 +64,10 @@ impl<'a> ParserContext<'a> {
         let extra_data = ParserContextExtraData::default();
         ParserContext::new_with_extra_data(stylesheet_origin, base_url, error_reporter, extra_data)
     }
+
+    pub fn pref_enabled(&self, pref: &str) -> bool {
+        ::util::prefs::PREFS.get(pref).as_boolean().unwrap_or(false)
+    }
 }
 
 

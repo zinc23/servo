@@ -508,7 +508,7 @@ impl<'a, 'b> AtRuleParser for NestedRuleParser<'a, 'b> {
                 Ok(AtRuleType::WithBlock(AtRulePrelude::FontFace))
             },
             "viewport" => {
-                if ::util::prefs::PREFS.get("layout.viewport.enabled").as_boolean().unwrap_or(false) {
+                if self.context.pref_enabled("layout.viewport.enabled") {
                     Ok(AtRuleType::WithBlock(AtRulePrelude::Viewport))
                 } else {
                     Err(())

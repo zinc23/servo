@@ -1065,8 +1065,7 @@ impl PropertyDeclaration {
                             }
                         % endif
                         % if property.experimental:
-                            if !::util::prefs::PREFS.get("layout.${property.name}.enabled")
-                                .as_boolean().unwrap_or(false) {
+                            if !context.pref_enabled("layout.${property.name}.enabled") {
                                 return PropertyDeclarationParseResult::ExperimentalProperty
                             }
                         % endif
@@ -1095,8 +1094,7 @@ impl PropertyDeclaration {
                         }
                     % endif
                     % if shorthand.experimental:
-                        if !::util::prefs::PREFS.get("layout.${shorthand.name}.enabled")
-                            .as_boolean().unwrap_or(false) {
+                        if !context.pref_enabled("layout.${shorthand.name}.enabled") {
                             return PropertyDeclarationParseResult::ExperimentalProperty
                         }
                     % endif

@@ -55,14 +55,13 @@
     #[inline] pub fn get_initial_value() -> computed_value::T {
         computed_value::T::${to_rust_ident(values[0])}
     }
-    pub fn parse(_context: &ParserContext, input: &mut Parser)
+    pub fn parse(context: &ParserContext, input: &mut Parser)
                  -> Result<SpecifiedValue, ()> {
         match_ignore_ascii_case! { try!(input.expect_ident()),
             % for value in values:
                 "${value}" => {
                     % if value in experimental_values:
-                        if !::util::prefs::PREFS.get("layout.${value}.enabled")
-                            .as_boolean().unwrap_or(false) {
+                        if !context.pref_enabled("layout.${value}.enabled") {
                             return Err(())
                         }
                     % endif
