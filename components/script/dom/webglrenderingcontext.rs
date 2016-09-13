@@ -15,6 +15,7 @@ use dom::bindings::inheritance::Castable;
 use dom::bindings::js::{JS, LayoutJS, MutNullableHeap, Root};
 use dom::bindings::reflector::{Reflectable, Reflector, reflect_dom_object};
 use dom::bindings::str::DOMString;
+use dom::bindings::typedarray::Float32Array;
 use dom::event::{Event, EventBubbles, EventCancelable};
 use dom::htmlcanvaselement::HTMLCanvasElement;
 use dom::htmlcanvaselement::utils as canvas_utils;
@@ -275,6 +276,38 @@ impl WebGLRenderingContext {
         let data = match data {
             Some(data) => data,
             None => {
+                self.webgl_error(InvalidOperation);
+                return false;
+            },
+        };
+
+        // TODO(emilio): Get more complex uniform info from ANGLE, and use it to
+        // properly validate that the uniform setter type is compatible with the
+        // uniform type, and that the uniform size matches.
+        if data.len() % uniform_type.element_count() != 0 {
+            self.webgl_error(InvalidOperation);
+            return false;
+        }
+
+        true
+    }
+
+    // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+    // https://www.khronos.org/opengles/sdk/docs/man/xhtml/glUniform.xml
+    // https://www.khronos.org/registry/gles/specs/2.0/es_full_spec_2.0.25.pdf#nameddest=section-2.10.4
+    fn validate_uniform_parameters_<T>(&self,
+                                      uniform: Option<&WebGLUniformLocation>,
+                                      uniform_type: UniformSetterType,
+                                      data: &[T]) -> bool {
+        let uniform = match uniform {
+            Some(uniform) => uniform,
+            None => return false,
+        };
+
+        let program = self.current_program.get();
+        match program {
+            Some(ref program) if program.id() == uniform.program_id() => {},
+            _ => {
                 self.webgl_error(InvalidOperation);
                 return false;
             },
@@ -1837,16 +1870,28 @@ impl WebGLRenderingContextMethods for WebGLRenderingContext {
     }
 
     // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+    #[allow(unsafe_code)]
     fn Uniform4fv(&self,
-                  _cx: *mut JSContext,
+                  cx: *mut JSContext,
                   uniform: Option<&WebGLUniformLocation>,
                   data: Option<*mut JSObject>) {
-        let data_vec = data.and_then(|d| array_buffer_view_to_vec::<f32>(d));
-        if self.validate_uniform_parameters(uniform,
+        let data = match data {
+            Some(data) => data,
+            None => return self.webgl_error(InvalidOperation),
+        };
+
+        typedarray!(in (cx) let typed_array = data);
+        let mut typed_array: Float32Array = match typed_array {
+            Ok(typed_array) => typed_array,
+            Err(()) => return,
+        };
+        let data_vec = unsafe { typed_array.as_slice().iter().cloned().take(4).collect::<Vec<_>>() };
+
+        if self.validate_uniform_parameters_(uniform,
                                             UniformSetterType::FloatVec4,
-                                            data_vec.as_ref().map(Vec::as_slice)) {
+                                            &data_vec) {
             self.ipc_renderer
-                .send(CanvasMsg::WebGL(WebGLCommand::Uniform4fv(uniform.unwrap().id(), data_vec.unwrap())))
+                .send(CanvasMsg::WebGL(WebGLCommand::Uniform4fv(uniform.unwrap().id(), data_vec)))
                 .unwrap()
         }
     }
