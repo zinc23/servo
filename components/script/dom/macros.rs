@@ -534,3 +534,16 @@ macro_rules! rooted_vec {
         let mut $name = $crate::dom::bindings::trace::RootedVec::new(&mut __root, $iter);
     }
 }
+
+
+#[macro_export]
+macro_rules! typedarray {
+    (in($cx:expr) let $name:ident = $init:expr) => {
+        let mut __root = $crate::js::jsapi::Rooted::new_unrooted($init);
+        let $name = $crate::dom::bindings::typedarray::TypedArray::new($cx, &mut __root);
+    };
+    (in($cx:expr) let mut $name:ident = $init:expr) => {
+        let mut __root = $crate::js::jsapi::Rooted::new_unrooted($init);
+        let mut $name = $crate::dom::bindings::typedarray::TypedArray::new($cx, &mut __root);
+    }
+}
