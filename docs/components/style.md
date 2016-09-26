@@ -40,7 +40,7 @@ layout traits have the required traits implemented.
 The [`stylist`][stylist] structure is the one that holds all the selectors and
 device characteristics for a given document.
 
-The stylesheets' CSS rules are converted into [`Rule`][selectors-rules]s, and
+The stylesheets' CSS rules are converted into [`Rule`][selectors-rule]s, and
 introduced in a [`SelectorMap`][selectors-selectormap] depending on the
 pseudo-element (see [`PerPseudoElementSelectorMap`][per-pseudo-selectormap]),
 stylesheet origin (see [`PerOriginSelectorMap`][per-origin-selectormap]), and
